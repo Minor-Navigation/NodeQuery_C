@@ -20,25 +20,33 @@ int dp[5009][5009]={0};
 
 class nodeInd{
 public:
-	ll id,ptr;
+	ll id,ptr,adjPtr;
 	int size;
 };
 
-
-char* queryNode(ll id)
+class nodeData {
+public:
+    ll id;
+    double lon,lat;
+    vector<ll> adj,adjPtr;
+    char* otherData;
+} nd;
+nodeData queryNode(ll id)
 {
 
-    fstream f,f1;
+    fstream f,f1,f2;
     
     f.open("NodeIndexNew.ind",ios::in | ios::out | ios::binary); 
     f1.open("CompleteNodeData.dat",ios::in | ios::out | ios::binary); 
+    f2.open("adjacency.dat",ios::in | ios::out | ios::binary); 
     char *res = NULL;
 
     f.seekg(0,ios::end);
     ll no_nodes=f.tellg();
     nodeInd in;
     no_nodes/=sizeof(nodeInd);
-
+    int size;
+    ll temp;
     ll s=0,e=no_nodes-1,m;
     while(s<=e)
     {
@@ -48,10 +56,21 @@ char* queryNode(ll id)
         if(in.id==id)
         {
             //cout<<"Found";
-            res= new char[in.size];
+            nd.otherData= new char[in.size];
             f1.seekg(in.ptr);f1.seekp(in.ptr);
-            f1.read(res,in.size);
-            return res;
+            f1.read(nd.otherData,in.size);
+
+            f2.seekg(in.adjPtr);f2.seekp(in.adjPtr);
+            f2>>nd.id>>nd.lon>>nd.lat>>size;
+            while(size--)
+            {
+                f2>>temp;
+                nd.adj.pb(temp);
+                f2>>temp;
+                nd.adjPtr.pb(temp);
+            }
+
+            return nd;
         }
         if(in.id<id)
             s=m+1;
@@ -60,7 +79,7 @@ char* queryNode(ll id)
 
     }
     cout<<"Not Found";
-    return res;
+    return NULL;
 
 }
 
@@ -69,10 +88,13 @@ int main()
 	
     freopen("input.txt", "r", stdin); 
     freopen("output.txt", "w", stdout);
-    char *s = queryNode(4721294499);
+    nodeData nd1;
+    if(nd1 = queryNode(58049719))
+    {
+        cout<<nd.id<<" "<<nd.lon<<" "<<nd.lat<<" "<<nd.adj.size()<<endl;
+        cout<<nd.otherData<<endl;
+    }    
     
-    if(s)
-        cout<<s;
 
 
  //    ll id,ptr;
